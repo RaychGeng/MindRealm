@@ -220,7 +220,7 @@ async function send() {
 
 async function callAI(text) {
     const res = await fetch(
-        "https://router.huggingface.co/v1/chat/completions",
+        "https://api.siliconflow.cn/v1/chat/completions",
         {
             method: "POST",
             headers: {
@@ -228,7 +228,7 @@ async function callAI(text) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "google/gemma-2-9b-it",
+                model: "deepseek-ai/DeepSeek-V3",
                 messages: [
                     {
                         role: "system",
