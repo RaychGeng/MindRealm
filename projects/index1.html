@@ -301,6 +301,9 @@ button:disabled {
 </div>
 
 <script>
+// 替换为新的 API Key
+const API_KEY = "sk-8b1f3b632edf4f6ea30218258ecbcf1b";
+
 const chatEl  = document.getElementById("chat");
 const inputEl = document.getElementById("input");
 const sendBtn = document.getElementById("sendBtn");
@@ -308,6 +311,7 @@ const sendBtn = document.getElementById("sendBtn");
 let isFirstMessage = true;
 
 function addMessage(text, type) {
+    // Remove welcome message on first interaction
     if (isFirstMessage) {
         const welcome = chatEl.querySelector('.welcome');
         if (welcome) welcome.remove();
@@ -381,21 +385,51 @@ async function send() {
 }
 
 async function callAI(text) {
-    const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message: text })
-    });
+    const res = await fetch(
+        "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+        {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + API_KEY,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "ep-20260706093059-28svb",
+                messages: [
+                    {
+                        role: "system",
+                        content:
+                            "你叫 Mentalis。\n" +
+                            "你是一位温柔的情绪陪伴AI。\n" +
+                            "要求：\n" +
+                            "不要说教。\n" +
+                            "不要分析用户。\n" +
+                            "不要长篇大论。\n" +
+                            "先共情，再轻轻追问。\n" +
+                            "每次回复控制在60字以内。"
+                    },
+                    {
+                        role: "user",
+                        content: text
+                    }
+                ],
+                temperature: 0.9,
+                max_tokens: 200
+            })
+        }
+    );
 
     const data = await res.json();
 
     if (!res.ok) {
-        throw new Error(data.error?.message || data.error || JSON.stringify(data));
+        throw new Error(data.error?.message || JSON.stringify(data));
     }
 
-    return data.reply;
+    if (!data.choices) {
+        return "模型没有返回内容。";
+    }
+
+    return data.choices[0].message.content;
 }
 
 inputEl.addEventListener("keydown", function (e) {
